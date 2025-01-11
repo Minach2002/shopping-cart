@@ -39,7 +39,8 @@ router.get('/add-product', function (req, res) {
 
 // Handle form submission with file upload
 router.post('/add-product', (req, res) => {
-  console.log(req.body); // Logs text fields from the form
+  console.log('req.files:', req.files); // Log the uploaded files
+  console.log('req.body:', req.body);   // Log the form data
 
   // Check if a file is uploaded
   if (!req.files || !req.files.Image) {
@@ -49,10 +50,11 @@ router.post('/add-product', (req, res) => {
 
   // Access the uploaded file
   const uploadedFile = req.files.Image;
-  console.log('Uploaded File:', uploadedFile);
 
-  // Example: Save the uploaded file
+  // Define the upload path
   const uploadPath = __dirname + '/../public/images/' + uploadedFile.name;
+
+  // Move the file to the upload directory
   uploadedFile.mv(uploadPath, (err) => {
     if (err) {
       console.error('Error while uploading file:', err);
@@ -63,4 +65,6 @@ router.post('/add-product', (req, res) => {
     res.send('File uploaded and data received successfully!');
   });
 });
+
+
 module.exports = router;

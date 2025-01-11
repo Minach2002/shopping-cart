@@ -6,10 +6,11 @@ var logger = require('morgan');
 
 var userRouter = require('./routes/user');
 var adminRouter = require('./routes/admin');
-var { engine } = require('express-handlebars'); // Correctly import 'engine'
+var { engine } = require('express-handlebars');
 
 var app = express();
 const fileUpload = require('express-fileupload');
+var db = require('./config/connection');
 
 // View engine setup
 app.engine('hbs', engine({
@@ -27,7 +28,27 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload());
+
+
+// Connect to the database a10nd start the server once the connection is successful
+db.connect((err) => {
+  if (err) {
+    console.error("Error connecting to the database:", err); // Detailed error logging
+    process.exit(1); // Stop the server if DB connection fails
+  } else {
+    console.log("Database connected successfully");
+
+    // Start the express server only after the DB connection is established
+    app.listen(3000, () => {
+      console.log('Server is running on http://localhost:3000');
+    });
+  }
+});
+
+// Routes
+
 app.use('/', userRouter);
+
 app.use('/admin', adminRouter);
 
 // Catch 404 and forward to error handler
@@ -37,11 +58,8 @@ app.use(function(req, res, next) {
 
 // Error handler
 app.use(function(err, req, res, next) {
-  // Set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // Render the error page
   res.status(err.status || 500);
   res.render('error');
 });
